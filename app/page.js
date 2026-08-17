@@ -1,4 +1,27 @@
-export default function Home() {
+import { createClient } from "@supabase/supabase-js";
+
+export const revalidate = 0;
+export default async function Home(const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
+const { data: productos = [], error } = await supabase
+  .from("productos")
+  .select("*")
+  .eq("visible", true)
+  .order("featured", { ascending: false })
+  .order("created_at", { ascending: false });
+
+const formatearPrecio = (precio) => {
+  if (precio === null || precio === undefined) return "Consultar precio";
+
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  }).format(Number(precio));
+};) {
   const categorias = [
     { nombre: "Celulares", icono: "📱" },
     { nombre: "Parlantes", icono: "🔊" },
@@ -8,33 +31,7 @@ export default function Home() {
     { nombre: "Ofertas", icono: "🔥" },
   ];
 
-  const productos = [
-    {
-      nombre: "Celulares",
-      descripcion: "Últimos modelos y las mejores marcas",
-      precio: "Consultá precio",
-      icono: "📱",
-    },
-    {
-      nombre: "Audio",
-      descripcion: "Parlantes y auriculares Bluetooth",
-      precio: "Consultá precio",
-      icono: "🎧",
-    },
-    {
-      nombre: "Accesorios",
-      descripcion: "Cargadores, cables, fundas y más",
-      precio: "Consultá precio",
-      icono: "🔌",
-    },
-    {
-      nombre: "Gamer",
-      descripcion: "Tecnología para disfrutar al máximo",
-      precio: "Consultá precio",
-      icono: "🎮",
-    },
-  ];
-
+    
   return (
     <main>
       <div className="topbar">
@@ -143,17 +140,73 @@ export default function Home() {
         <h2>Productos destacados</h2>
 
         <div className="productos">
-          {productos.map((producto) => (
-            <div className="producto" key={producto.nombre}>
-              <div className="productoImagen">{producto.icono}</div>
-              <small>VALENTINO</small>
-              <h3>{producto.nombre}</h3>
-              <p>{producto.descripcion}</p>
-              <strong className="precio">{producto.precio}</strong>
-              <button>VER PRODUCTOS</button>
-            </div>
-          ))}
+  {productos.length === 0 ? (
+    <p>No hay productos disponibles por el momento.</p>
+  ) : (
+    productos.map((producto) => (
+      <div className="producto" key={producto.id}>
+        <div className="productoImagen">
+          {producto.image_url ? (
+            <img
+              src={producto.image_url}
+              alt={producto.name}
+              style={{
+                width: "100%",
+                height: "230px",
+                objectFit: "contain",
+                padding: "20px",
+              }}
+            />
+          ) : (
+            <span style={{ fontSize: "80px" }}>
+              {producto.category === "Celulares"
+                ? "📱"
+                : producto.category === "Parlantes"
+                ? "🔊"
+                : producto.category === "Auriculares"
+                ? "🎧"
+                : producto.category === "Gamer"
+                ? "🎮"
+                : "🔌"}
+            </span>
+          )}
         </div>
+
+        {producto.badge && <small>{producto.badge}</small>}
+
+        <h3>{producto.name}</h3>
+
+        <p>{producto.description}</p>
+
+        {producto.old_price && (
+          <span
+            style={{
+              textDecoration: "line-through",
+              color: "#777",
+              marginLeft: "20px",
+              display: "block",
+              marginTop: "12px",
+            }}
+          >
+            {formatearPrecio(producto.old_price)}
+          </span>
+        )}
+
+        <strong className="precio">
+          {formatearPrecio(producto.price)}
+        </strong>
+
+        <p style={{ marginTop: "8px" }}>
+          {producto.stock > 0
+            ? `Stock disponible: ${producto.stock}`
+            : "Sin stock"}
+        </p>
+
+        <button>VER PRODUCTO</button>
+      </div>
+    ))
+  )}
+</div>          
       </section>
 
       <section className="servicio" id="servicio">
