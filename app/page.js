@@ -22,7 +22,7 @@ const formatearPrecio = (precio) => {
     currency: "ARS",
     maximumFractionDigits: 0,
   }).format(Number(precio));
-};) {
+};
   const categorias = [
     { nombre: "Celulares", icono: "📱" },
     { nombre: "Parlantes", icono: "🔊" },
