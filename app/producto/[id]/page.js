@@ -90,7 +90,7 @@ export default async function ProductoPage({ params }) {
             </div>
 
             <a
-              href={`https://wa.me/?text=${mensaje}`}
+              href={`https://wa.me/5492944110615?text=${mensaje}`}
               target="_blank"
               rel="noopener noreferrer"
               style={styles.whatsapp}
