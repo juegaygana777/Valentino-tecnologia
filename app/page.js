@@ -203,7 +203,9 @@ const formatearPrecio = (precio) => {
             : "Sin stock"}
         </p>
 
-        <button>VER PRODUCTO</button>
+        <a href={`/producto/${producto.id}`} className="botonProducto">
+  VER PRODUCTO
+</a>
       </div>
     ))
   )}
