@@ -548,13 +548,9 @@ const imageUrl = imageUrls[0] || formulario.image_url || "";
                   type="file"
                   accept="image/*"
 multiple
-                  onChange={(e) =>
-                    setArchivo(
-  Array.from(e.target.files || [])
-)
-          
-                    )
-                  }
+     onChange={(e) =>
+  setArchivo(Array.from(e.target.files || []))
+}
                   style={styles.inputArchivo}
                 />
               </div>
