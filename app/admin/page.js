@@ -19,6 +19,7 @@ const formularioVacio = {
   visible: true,
   featured: false,
   image_url: "",
+image_urls: [],
 };
 
 export default function AdminPage() {
@@ -121,33 +122,43 @@ export default function AdminPage() {
     setMensaje("");
   }
 
-  async function subirImagen() {
-    if (!archivo) {
-      return formulario.image_url || "";
-    }
+ async function subirImagen() {
+  if (!archivo || archivo.length === 0) {
+    return formulario.image_urls?.length
+      ? formulario.image_urls
+      : formulario.image_url
+      ? [formulario.image_url]
+      : [];
+  }
 
-    const extension = archivo.name.split(".").pop();
+  const urls = [];
+
+  for (const imagen of archivo) {
+    const extension = imagen.name.split(".").pop();
     const nombreSeguro = `${Date.now()}-${Math.random()
       .toString(36)
       .slice(2)}.${extension}`;
 
     const { error: uploadError } = await supabase.storage
       .from("productos")
-      .upload(nombreSeguro, archivo, {
+      .upload(nombreSeguro, imagen, {
         cacheControl: "3600",
         upsert: false,
       });
 
     if (uploadError) {
-      throw new Error("No se pudo subir la imagen.");
+      throw new Error("No se pudo subir una de las imágenes.");
     }
 
     const { data } = supabase.storage
       .from("productos")
       .getPublicUrl(nombreSeguro);
 
-    return data.publicUrl;
+    urls.push(data.publicUrl);
   }
+
+  return urls;
+}
 
   async function guardarProducto(e) {
     e.preventDefault();
@@ -161,7 +172,8 @@ export default function AdminPage() {
     setMensaje("");
 
     try {
-      const imageUrl = await subirImagen();
+      const imageUrls = await subirImagen();
+const imageUrl = imageUrls[0] || formulario.image_url || "";
 
       const producto = {
         name: formulario.name.trim(),
@@ -179,6 +191,7 @@ export default function AdminPage() {
         visible: formulario.visible,
         featured: formulario.featured,
         image_url: imageUrl,
+        image_urls: imageUrls,
       };
 
       if (editandoId) {
@@ -226,6 +239,7 @@ export default function AdminPage() {
       visible: producto.visible ?? true,
       featured: producto.featured ?? false,
       image_url: producto.image_url || "",
+      image_urls: producto.image_urls || (producto.image_url ? [producto.image_url] : []),
     });
 
     setArchivo(null);
@@ -533,9 +547,12 @@ export default function AdminPage() {
                 <input
                   type="file"
                   accept="image/*"
+multiple
                   onChange={(e) =>
                     setArchivo(
-                      e.target.files?.[0] || null
+  Array.from(e.target.files || [])
+)
+          
                     )
                   }
                   style={styles.inputArchivo}
